@@ -20,7 +20,10 @@ _build/
 
 # ocamlbuild targets
 *.byte
+*.byt
+*.opt
 *.native
+build
 
 # oasis generated files
 setup.data
