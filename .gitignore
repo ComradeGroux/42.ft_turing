@@ -37,4 +37,7 @@ setup.log
 
 # Local OPAM switch
 _opam/
+
 ft_turing
+.pdf
+.txt

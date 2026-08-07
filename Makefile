@@ -7,9 +7,10 @@ ERASE	:= \r\033[2K
 
 NAME = ft_turing
 
-CAMLOPT = ocamlopt
-CAMLC = ocamlc
-CAMLDEP = ocamldep
+OPAM_ENV = eval $$(opam env) >/dev/null 2>&1;
+CAMLOPT = $(OPAM_ENV) ocamlfind ocamlopt
+CAMLC = $(OPAM_ENV) ocamlfind ocamlc
+CAMLDEP = $(OPAM_ENV) ocamldep
 DEP_FILE_OPT = $(BUILD_DIR)/$(OPT_DIR)/.depend
 DEP_FILE_BYT = $(BUILD_DIR)/$(BYT_DIR)/.depend
 
@@ -18,16 +19,56 @@ BUILD_DIR = build
 OPT_DIR = opt
 BYT_DIR = byt
 
-SOURCES =	main.ml		\
-			parser.ml
+SOURCES =	main.ml			\
+			parser.ml		\
+			machine.ml
 SRCS = $(filter %.ml, $(addprefix $(SRCS_DIR)/, $(SOURCES)))
 MLI_SRCS = $(filter %.mli, $(addprefix $(SRCS_DIR)/, $(SOURCES)))
 
 ORDER_FILE_OPT = $(BUILD_DIR)/$(OPT_DIR)/.order
 ORDER_FILE_BYT = $(BUILD_DIR)/$(BYT_DIR)/.order
 
+LIBS =	yojson	\
+		core
 
-all: $(BUILD_DIR) $(DEP_FILE_OPT) $(DEP_FILE_BYT) opt byt $(NAME)
+empty :=
+space := $(empty) $(empty)
+comma := ,
+PACKAGES := $(subst $(space),$(comma),$(strip $(LIBS)))
+
+PKG_FLAGS   := $(if $(strip $(LIBS)),-package $(PACKAGES))
+LINK_FLAGS  := $(if $(strip $(LIBS)),-package $(PACKAGES) -linkpkg)
+
+OPAMROOT := $(HOME)/.opam
+OPAM_INSTALL_URL = https://opam.ocaml.org/install.sh
+
+all: check-opam check-libs $(BUILD_DIR) $(DEP_FILE_OPT) $(DEP_FILE_BYT) opt byt $(NAME)
+
+check-opam:
+	@if ! command -v opam >/dev/null 2>&1; then \
+		printf "$(BOLD)$(BLUE)opam not found, installation...$(RESET)\n"; \
+		bash -c "sh <(curl -fsSL $(OPAM_INSTALL_URL))" --no-backup -y || \
+			(printf "$(GRAY)Automatic opam installation failed. Install it manually : https://opam.ocaml.org/doc/Install.html$(RESET)\n" && exit 1); \
+		printf "$(GREEN)  ✓ opam installed$(RESET)\n"; \
+	fi
+	@if [ ! -d "$(OPAMROOT)" ]; then \
+		printf "$(BOLD)$(BLUE)Opam initialization...$(RESET)\n"; \
+		opam init -y --disable-sandboxing >/dev/null; \
+		printf "$(GREEN)  ✓ opam initialized$(RESET)\n"; \
+	fi
+
+check-libs: check-opam
+	@eval $$(opam env) >/dev/null 2>&1; \
+	for lib in $(LIBS); do \
+		if ! ocamlfind list 2>/dev/null | awk '{print $$1}' | grep -qx "$$lib"; then \
+			printf "$(GRAY)  Missing libraries : $$lib, installation via opam...$(RESET)\n"; \
+			opam install -y "$$lib" || \
+				(printf "$(GRAY)Installation failed: $$lib$(RESET)\n" && exit 1); \
+			printf "$(GREEN)  ✓ $$lib installed$(RESET)\n"; \
+		fi; \
+	done
+	@eval $$(opam env) >/dev/null 2>&1
+
 
 
 $(ORDER_FILE_OPT): $(SRCS) $(MLI_SRCS) | $(BUILD_DIR)
@@ -74,32 +115,32 @@ $(BUILD_DIR)/.byt_start: $(SRCS) $(MLI_SRCS) | $(BUILD_DIR)
 
 $(NAME).opt: $(OPTOBJS)
 	@printf "$(BOLD)Linking $(NAME).opt$(RESET)\n"
-	@$(CAMLOPT) $(FLAGS_OPT) -o $@ $^
+	@$(CAMLOPT) $(FLAGS_OPT) $(LINK_FLAGS) -o $@ $^
 	@printf "$(GREEN)  ✓ $(NAME).opt ready$(RESET)\n"
 
 $(BUILD_DIR)/$(OPT_DIR)/%.cmi: $(SRCS_DIR)/%.mli | $(BUILD_DIR)/.opt_start
 	@printf "$(GRAY)  $<...$(RESET)" && \
-	 $(CAMLOPT) $(FLAGS_OPT) -c -o $@ $< && \
+	 $(CAMLOPT) $(FLAGS_OPT) $(PKG_FLAGS) -c -o $@ $< && \
 	 printf "$(ERASE)$(GREEN)  ✓ $<$(RESET)\n"
 
 $(BUILD_DIR)/$(OPT_DIR)/%.cmx: $(SRCS_DIR)/%.ml | $(BUILD_DIR)/.opt_start
 	@printf "$(GRAY)  $<...$(RESET)" && \
-	 $(CAMLOPT) $(FLAGS_OPT) -c -o $@ $< && \
+	 $(CAMLOPT) $(FLAGS_OPT) $(PKG_FLAGS) -c -o $@ $< && \
 	 printf "$(ERASE)$(GREEN)  ✓ $<$(RESET)\n"
 
 $(NAME).byt: $(BYTOBJS)
 	@printf "$(BOLD)Linking $(NAME).byt$(RESET)\n"
-	@$(CAMLC) $(FLAGS_BYT) -o $@ $^
+	@$(CAMLC) $(FLAGS_BYT) $(LINK_FLAGS) -o $@ $^
 	@printf "$(GREEN)  ✓ $(NAME).byt ready$(RESET)\n"
 
 $(BUILD_DIR)/$(BYT_DIR)/%.cmi: $(SRCS_DIR)/%.mli | $(BUILD_DIR)/.byt_start
 	@printf "$(GRAY)  $<...$(RESET)" && \
-	 $(CAMLC) $(FLAGS_BYT) -c -o $@ $< && \
+	 $(CAMLC) $(FLAGS_BYT) $(PKG_FLAGS) -c -o $@ $< && \
 	 printf "$(ERASE)$(GREEN)  ✓ $<$(RESET)\n"
 
 $(BUILD_DIR)/$(BYT_DIR)/%.cmo: $(SRCS_DIR)/%.ml | $(BUILD_DIR)/.byt_start
 	@printf "$(GRAY)  $<...$(RESET)" && \
-	 $(CAMLC) $(FLAGS_BYT) -c -o $@ $< && \
+	 $(CAMLC) $(FLAGS_BYT) $(PKG_FLAGS) -c -o $@ $< && \
 	 printf "$(ERASE)$(GREEN)  ✓ $<$(RESET)\n"
 
 $(BUILD_DIR):
@@ -131,4 +172,4 @@ fclean: clean
 re: fclean
 	@$(MAKE) --no-print-directory
 
-.PHONY: all clean fclean re opt byt
+.PHONY: all clean fclean re opt byt check-opam check-libs
