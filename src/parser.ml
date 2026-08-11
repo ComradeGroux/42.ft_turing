@@ -1,3 +1,20 @@
+open Types
+
+let extract_result_or_exit res =
+	let print_err_and_exit str err =
+		prerr_endline ("Error: " ^ str ^ err) ; exit 1
+	in match res with
+	| Ok value -> value
+	| Error (Json_error err) -> print_err_and_exit " JSON error: " err
+	| Error (Missing_field err) -> print_err_and_exit "Missing field: " err
+	| Error (Invalid_symbol err) -> print_err_and_exit "Invalid symbol: " err
+	| Error (Blank_not_in_alphabet) -> print_err_and_exit "Blank: " "Not in alphabet"
+	| Error (Unknown_state err) -> print_err_and_exit "State: " err
+	| Error (Initial_not_in_states) -> print_err_and_exit "Initial: " "Not in states"
+	| Error (Finals_not_subset_of_states) -> print_err_and_exit "Finals: " "Not a subset of states"
+	| Error (Duplicate_transitions (str, char)) -> print_err_and_exit ("Transitions: Duplicate of " ^ str ^ " when reading the symbol ") (String.make 1 char)
+	| Error _ -> print_err_and_exit "Default error" ""
+
 let check_filepath_validity filepath =
 	if Sys.file_exists filepath then begin
 		if Sys.is_directory filepath then begin
@@ -11,58 +28,79 @@ let check_filepath_validity filepath =
 
 let extract_json filepath =
 	try
-		Yojson.Safe.from_file filepath
-	with | _ -> (prerr_endline "Error: occurred during the reading of the file" ; exit 1)
+		Result.ok (Yojson.Safe.from_file filepath)
+	with | _ -> Result.error (Json_error "occured when reading the file")
 
 let get_name json =
 	try
-		Yojson.Safe.Util.(json |> member "name" |> to_string)
-	with _ -> (prerr_endline "Error in json: name: The key miss or was mistyped" ; exit 1)
+		Result.ok (Yojson.Safe.Util.(json |> member "name" |> to_string))
+	with _ -> Result.error (Missing_field "alphabet")
 
 let get_alphabet json =
 	let alpha = try
-		Yojson.Safe.Util.(json |> member "alphabet" |> (convert_each to_string))
-	with _ -> (prerr_endline "Error in json: alphabet: The key miss or was mistyped" ; exit 1) in
-	if Core.List.for_all alpha ~f:(fun a -> Core.String.length a == 1) == false then begin
-		prerr_endline "Error in json: alphabet: Each value must be a string of length equal to 1";
-		exit 1
-	end else
-		alpha
+		Result.ok Yojson.Safe.Util.(json |> member "alphabet" |> (convert_each to_string))
+	with _ -> Result.error (Missing_field "alphabet") in
+	match alpha with
+	| Error err -> Result.error err
+	| Ok value ->
+		if Core.List.for_all value ~f:(fun a -> Core.String.length a == 1) == false then
+			Result.error (Invalid_symbol "Every symbol in alphabet must be exactly 1 character")
+		else
+			Result.ok (Core.Char.Set.of_list (Core.List.map value ~f:(fun c -> c.[0])))
 
 let get_blank json =
 	let blank = try
-		Yojson.Safe.Util.(json |> member "blank" |> to_string)
-	with _ -> (prerr_endline "Error in json: blank: The key miss or was mistyped" ; exit 1) in
-	if Core.List.exists (get_alphabet json) ~f:(fun b -> Core.String.equal b blank) == false then begin
-		prerr_endline "Error in json: blank: The blank value must exist in the alphabet";
-		exit 1
-	end else
-		blank
+		Result.ok Yojson.Safe.Util.(json |> member "blank" |> to_string)
+	with _ -> Result.error (Missing_field "blank") in
+	match blank with
+	| Error err -> Result.error (err)
+	| Ok value -> begin
+		match get_alphabet json with
+		| Error _ -> Result.error (Default_error "occured while retrieving the alphabet")
+		| Ok alpha ->
+			let value = value.[0] in
+			if Core.Set.mem alpha value == false then
+				Result.error (Blank_not_in_alphabet)
+			else
+				Result.ok value
+	end
 
 let get_states json = try
-		Yojson.Safe.Util.(json |> member "states" |> (convert_each to_string))
-	with _ -> (prerr_endline "Error in json: states: The key miss or was mistyped" ; exit 1)
+		Result.ok (Core.String.Set.of_list Yojson.Safe.Util.(json |> member "states" |> (convert_each to_string)))
+	with _ -> Result.error (Missing_field "states")
 
 let get_initial json =
 	let initial = try
-		Yojson.Safe.Util.(json |> member "initial" |> to_string)
-	with _ -> (prerr_endline "Error in json: initial: The key miss or was mistyped" ; exit 1) in
-	if Core.List.exists (get_states json) ~f:(fun i -> Core.String.equal i initial) == false then begin
-		prerr_endline "Error in json: initial: The initial value must exist in the states";
-		exit 1
-	end else
-		initial
+		Result.ok Yojson.Safe.Util.(json |> member "initial" |> to_string)
+	with _ -> Result.error (Missing_field "initial") in
+	match initial with
+	| Ok value -> begin
+		match get_states json with
+		| Error _ -> Result.error (Default_error "occured when retrieving the states")
+		| Ok states ->
+			if Core.Set.mem states value == false then
+				Result.error (Initial_not_in_states)
+			else
+				Result.ok value
+	end
+	| Error _ -> initial
 
 let get_finals json =
 	let finals = try
-		Yojson.Safe.Util.(json |> member "states" |> (convert_each to_string))
-	with _ -> (prerr_endline "Error in json: states: The key miss or was mistyped" ; exit 1) in
-	let states = get_states json in
-	if Core.List.for_all finals ~f:(fun f -> Core.List.exists states ~f:(fun s -> Core.String.equal f s)) == false then begin
-		prerr_endline "Error in json: initial: The finals values must exist in the states";
-		exit 1
-	end else
-		finals
+		Result.ok Yojson.Safe.Util.(json |> member "finals" |> (convert_each to_string))
+	with _ -> Result.error (Missing_field "finals") in
+	match finals with
+	| Error err -> Result.error err
+	| Ok value -> begin
+		match get_states json with
+		| Error _ -> Result.error (Default_error "occured when retrieving the states")
+		| Ok states ->
+			let values = Core.String.Set.of_list value in
+			if Core.Set.is_subset values ~of_:states == false then
+				Result.error (Finals_not_subset_of_states)
+			else
+				Result.ok values
+	end
 
 let parse_transition json =
 	try
@@ -74,60 +112,106 @@ let parse_transition json =
 	with _ -> (prerr_endline "Error in json: transition: A key miss or was mistyped" ; exit 1)
 
 let check_transitions_state_keys transitions states =
-	if Core.List.for_all transitions ~f:(fun (key, _) -> Core.List.exists states ~f:(fun s -> Core.String.equal s key)) == false then begin
-		prerr_endline "Error in json: transition: The transition's keys must exist in the states";
-		exit 1
-	end
+	if Core.List.for_all transitions ~f:(fun (key, _) -> Core.Set.mem states key) == false then
+		Result.error (Unknown_state "The transitions states must exist in the states")
+	else
+		Result.ok (())
 
 let rec check_transitions_state_value lst alphabet states =
 	match lst with
-	| [] -> ()
+	| [] -> Result.ok (())
 	| head::tail -> begin
 		let rec check_transition_values l alphabet states =
 			match l with
 			| [] -> check_transitions_state_value tail alphabet states
 			| (read, value)::t when Core.String.equal read "read" ->
-				if Core.List.exists alphabet ~f:(fun c -> Core.String.equal c value) == false then begin
-					prerr_endline "Error in json: transition: The read value must exist in the alphabet";
-					exit 1
-				end;
-				check_transition_values t alphabet states
+				if Core.String.length value == 1 then begin
+					let value = value.[0] in
+					if Core.Set.mem alphabet value == false then
+						Result.error (Invalid_symbol "The read symbol must exist in the alphabet")
+					else
+						check_transition_values t alphabet states
+				end else
+					Result.error (Invalid_symbol "The read symbol must be only 1 character")
 			| (state, value)::t when Core.String.equal state "to_state" ->
-				if Core.List.exists states ~f:(fun s -> Core.String.equal s value) == false then begin
-					prerr_endline "Error in json: transition: The to_state value must exist in the states";
-					exit 1
-				end;
-				check_transition_values t alphabet states
+				if Core.Set.mem states value == false then
+					Result.error (Unknown_state "The to_state value must be a valid state")
+				else
+					check_transition_values t alphabet states
 			| (write, value)::t when Core.String.equal write "write" ->
-				if Core.List.exists alphabet ~f:(fun c -> Core.String.equal c value) == false then begin
-					prerr_endline "Error in json: transition: The write value must exist in the alphabet";
-					exit 1
-				end;
-				check_transition_values t alphabet states
+				if Core.String.length value == 1 then begin
+					let value = value.[0] in
+					if Core.Set.mem alphabet value == false then
+						Result.error (Invalid_symbol "The write symbol must exist in the alphabet")
+					else
+						check_transition_values t alphabet states
+				end else
+					Result.error (Invalid_symbol "The write symbol must be only 1 character")
 			| (action, value)::t when Core.String.equal action "action" ->
-				if Core.String.equal value "LEFT" == false && Core.String.equal value "RIGHT" == false then begin
-					prerr_endline "Error in json: transition: The action value must be either LEFT or RIGHT";
-					exit 1
-				end;
-				check_transition_values t alphabet states
+				if Core.String.equal value "LEFT" == false && Core.String.equal value "RIGHT" == false then
+					Result.error (Invalid_symbol "The action value must be LEFT or RIGHT")
+				else
+					check_transition_values t alphabet states
 			| _ -> begin
-				prerr_endline "Error in json: transition: Unknown key";
-				exit 1
+				Result.error (Default_error "")
 			end
 		in check_transition_values head alphabet states
 	end
 
+let field name fields =
+	match Core.List.Assoc.find fields ~equal:Core.String.equal name with
+	| Some v -> v
+	| None -> assert false
+
+let action_of_string = function
+	| "LEFT"  -> LEFT
+	| "RIGHT" -> RIGHT
+	| _ -> assert false
+
+let transition_of_fields fields =
+{
+	read     = (field "read" fields).[0];
+	to_state = field "to_state" fields;
+	write    = (field "write" fields).[0];
+	action   = action_of_string (field "action" fields)
+}
+
+let build_transitions value =
+	let entries =
+		Core.List.concat_map value ~f:(fun (state, rules) ->
+			Core.List.map rules ~f:(fun fields ->
+				let tr = transition_of_fields fields in
+				((state, tr.read), tr)))
+	in
+	match Core.Map.Poly.of_alist entries with
+	| `Duplicate_key (state, c) -> Result.error (Duplicate_transitions (state, c))
+	| `Ok m -> Result.ok m
+
 let get_transitions json =
 	let transitions = try
-		Yojson.Safe.Util.(
+		Result.ok Yojson.Safe.Util.(
 			json |> member "transitions" |> to_assoc |>
 			List.map (fun (state, rules_json) -> (state, convert_each parse_transition rules_json)))
-	with _ -> (prerr_endline "Error in json: transition: The key miss or was mistyped" ; exit 1) in
-	let states = get_states json in
-	let alphabet = get_alphabet json in
-	check_transitions_state_keys transitions states ;
-	Core.List.iter transitions ~f:(fun (_, transition) -> check_transitions_state_value transition alphabet states);
-	transitions
+	with _ -> Result.error (Missing_field "transitions") in
+	match transitions with
+	| Error err -> Result.error err
+	| Ok value -> begin
+		match get_states json with
+		| Error _ -> Result.error (Default_error "occured when retrieving the states")
+		| Ok states -> begin
+			match get_alphabet json with
+			| Error _ -> Result.error (Default_error "occured when retrieving the states")
+			| Ok alphabet-> begin
+				match check_transitions_state_keys value states with
+				| Error err -> Result.error err
+				| Ok _ -> begin
+					match check_transitions_state_value (Core.List.concat_map value ~f:snd) alphabet states with
+					| Error err -> Result.error err
+					| Ok _ -> build_transitions value
+				end
+			end
+		end
+	end
 
 let check_number_arguments_and_help argv =
 	let argc = Array.length argv in

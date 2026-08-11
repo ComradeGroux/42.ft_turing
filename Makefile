@@ -21,7 +21,8 @@ BYT_DIR = byt
 
 SOURCES =	main.ml			\
 			parser.ml		\
-			machine.ml
+			machine.ml		\
+			types.ml
 SRCS = $(filter %.ml, $(addprefix $(SRCS_DIR)/, $(SOURCES)))
 MLI_SRCS = $(filter %.mli, $(addprefix $(SRCS_DIR)/, $(SOURCES)))
 

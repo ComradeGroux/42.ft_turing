@@ -7,4 +7,4 @@ let () =
 
 	let input = Array.get argv 2 in
 	let turing = new Machine.turing filepath in
-	turing#run input
+	turing#run input ;
