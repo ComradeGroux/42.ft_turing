@@ -18,7 +18,30 @@ class turing (filepath: string) =
 		method finals		: Core.String.Set.t = finals
 		method transitions	: (string * char, transition) Core.Map.Poly.t = transitions
 
-		method run (expr: string) = ()
+		method run (expr: string) =
+			let t = Core.List.init (Core.String.length expr) ~f:(Core.String.get expr) in
+			let t = match t with
+				| [] -> Parser.extract_result_or_exit (Result.error (Default_error "Input is empty"))
+				| head::tail -> { left = [] ; head = head ; right = tail }
+			in ()
 
-	initializer print_endline "Machine initialized !"
+		method private print_tape t =
+			let full_tape = (List.rev t.left) @ [t.head] @ t.right in
+			let rec print_char_list lst =
+				match lst with
+				| [] -> ()
+				| head::tail -> print_char head ; print_char_list tail
+			in print_char_list full_tape
+
+		method private move_left t =
+			match t.left with
+			| [] -> { left = [] ; head = blank ; right = t.head::t.right }
+			| curr::tail -> { left = tail ; head = curr ; right = t.head::t.right }
+
+		method private move_right t =
+			match t.right with
+			| [] -> { left = t.head::t.left ; head = blank ; right = [] }
+			| curr::tail -> { left = t.head::t.left ; head = curr ; right = tail }
+
+	initializer print_endline ("Machine " ^ self#name ^ " initialized !")
 end

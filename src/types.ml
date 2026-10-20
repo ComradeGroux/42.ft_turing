@@ -18,3 +18,9 @@ type error =
 	| Duplicate_transitions of string * char
 	| Machine_blocked of string * char
 	| Default_error of string
+
+type tape = {
+	left	: char list;
+	head	: char;
+	right	: char list;
+}

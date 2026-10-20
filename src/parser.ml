@@ -163,7 +163,8 @@ let field name fields =
 	| Some v -> v
 	| None -> assert false
 
-let action_of_string = function
+let action_of_string x =
+	match x with
 	| "LEFT"  -> LEFT
 	| "RIGHT" -> RIGHT
 	| _ -> assert false
