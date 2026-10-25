@@ -19,9 +19,9 @@ class turing (filepath: string) =
 		method transitions	: transition_table = transitions
 
 		method run (expr: string) =
-				let t = Core.List.init (Core.String.length expr) ~f:(Core.String.get expr) in
-				let t = match t with
-					| [] -> Parser.extract_result_or_exit (Result.error (Default_error "Input is empty"))
+				let expr_list = Core.String.to_list expr in
+				let input_tape = match expr_list with
+					| [] -> assert false
 					| head::tail -> { left = [] ; head = head ; right = tail }
 				in ()
 
