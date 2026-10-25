@@ -23,15 +23,56 @@ class turing (filepath: string) =
 				let input_tape = match expr_list with
 					| [] -> assert false
 					| head::tail -> { left = [] ; head = head ; right = tail }
-				in ()
+				in
+				let rec loop tape state =
+					if Core.Set.mem self#finals state then begin
+						self#print_tape tape;
+						print_endline "";
+						print_endline ("Final state reached: " ^ state)
+					end	else
+							let transition = Core.Map.find self#transitions (state, tape.head)
+							in match transition with
+							| None ->  prerr_endline (
+								"Error: machine blocked: no transition for (" ^
+								state ^ ", " ^ String.make 1 tape.head ^ ")"
+							); exit 1
+							| Some v-> begin
+									self#print_tape tape;
+									print_string " >>>>> Transition: ";
+									self#print_transition state v;
+									print_endline "";
+									let tape = {tape with head = v.write} in
+									let updated_tape = match v.action with
+										| Left -> self#move_left tape
+										| Right -> self#move_right tape
+									in
+									loop updated_tape v.to_state
+								end
+
+				in loop input_tape self#initial 
 
 		method private print_tape t =
-			let full_tape = (List.rev t.left) @ [t.head] @ t.right in
 			let rec print_char_list lst =
 				match lst with
 				| [] -> ()
-				| head::tail -> print_char head ; print_char_list tail
-			in print_char_list full_tape
+				| head::tail -> print_char head; print_char_list tail
+			in print_char '[';
+			print_char_list (List.rev t.left);
+			print_string ("<" ^ String.make 1 t.head ^ ">");
+			print_char_list t.right;
+			print_char ']'
+
+		method private print_transition (state: state) (t: transition) =
+			let action = match t.action with
+			| Right -> "RIGHT"
+			| Left -> "LEFT"
+			in
+			print_string (
+				"(" ^ state ^ ", " ^ 
+				String.make 1 t.read ^ ") -> (" ^
+				t.to_state ^ ", " ^ String.make 1 t.write ^
+				", " ^ action ^ ")"
+			)
 
 		method private move_left t =
 			match t.left with
