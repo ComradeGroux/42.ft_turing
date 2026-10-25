@@ -19,11 +19,11 @@ class turing (filepath: string) =
 		method transitions	: transition_table = transitions
 
 		method run (expr: string) =
-			let t = Core.List.init (Core.String.length expr) ~f:(Core.String.get expr) in
-			let t = match t with
-				| [] -> Parser.extract_result_or_exit (Result.error (Default_error "Input is empty"))
-				| head::tail -> { left = [] ; head = head ; right = tail }
-			in ()
+				let t = Core.List.init (Core.String.length expr) ~f:(Core.String.get expr) in
+				let t = match t with
+					| [] -> Parser.extract_result_or_exit (Result.error (Default_error "Input is empty"))
+					| head::tail -> { left = [] ; head = head ; right = tail }
+				in ()
 
 		method private print_tape t =
 			let full_tape = (List.rev t.left) @ [t.head] @ t.right in
