@@ -16,6 +16,23 @@ let extract_result_or_exit res =
 	| Error (Duplicate_transitions (str, char)) -> print_err_and_exit ("Transitions: Duplicate of " ^ str ^ " when reading the symbol ") (String.make 1 char)
 	| Error _ -> print_err_and_exit "Default error" ""
 
+let check_tape_validity (input: string) (alphabet: symbol_set) (blank: symbol) =
+	if Core.String.is_empty input then begin
+		prerr_endline ("Error: Tape can't be empty !");
+		exit 1
+	end else
+		match Core.String.find input ~f:(
+			fun c -> not (Core.Set.mem alphabet c) || Core.Char.equal c blank
+		) with
+		| None -> ()
+		| Some c -> begin
+			if Core.Char.equal c blank then
+				prerr_endline ("Error: Tape can't contain blank character " ^ String.make 1 c)
+			else
+				prerr_endline ("Error: '" ^ String.make 1 c ^ "' is not in character set !");
+			exit 1
+		end
+
 let check_filepath_validity filepath =
 	if Sys.file_exists filepath then begin
 		if Sys.is_directory filepath then begin
