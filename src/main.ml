@@ -8,7 +8,7 @@ let () =
 	Parser.check_filepath_validity filepath ;
 
 	let machine = Machine.init_machine filepath in
-	Printer.print_success("Machine " ^ machine.name ^ " initialized !");
+	Printer.print_success ("Machine " ^ machine.name ^ " initialized !");
 	Printer.print_machine machine;
 
 	let input = Array.get argv 2 in
