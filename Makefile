@@ -22,6 +22,7 @@ BYT_DIR = byt
 SOURCES =	main.ml			\
 			parser.ml		\
 			machine.ml		\
+			tape.ml			\
 			types.ml		\
 			printer.ml
 SRCS = $(filter %.ml, $(addprefix $(SRCS_DIR)/, $(SOURCES)))
