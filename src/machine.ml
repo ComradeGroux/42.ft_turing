@@ -11,12 +11,12 @@ class turing (filepath: string) =
 	let transitions = Parser.extract_result_or_exit (Parser.get_transitions json) in
 	object (self)
 		method name 		: string = name
-		method alphabet		: Core.Char.Set.t = alphabet
-		method blank 		: char = blank
-		method states		: Core.String.Set.t = states
-		method initial		: string = initial
-		method finals		: Core.String.Set.t = finals
-		method transitions	: (string * char, transition) Core.Map.Poly.t = transitions
+		method alphabet		: symbol_set = alphabet
+		method blank 		: symbol = blank
+		method states		: state_set = states
+		method initial		: state = initial
+		method finals		: state_set = finals
+		method transitions	: transition_table = transitions
 
 		method run (expr: string) =
 			let t = Core.List.init (Core.String.length expr) ~f:(Core.String.get expr) in

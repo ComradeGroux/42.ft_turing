@@ -1,10 +1,26 @@
-type action = LEFT | RIGHT
+type action = Left | Right
+
+type symbol = char
+
+type symbol_set = Core.Char.Set.t
+
+type state = string
+
+type state_set = Core.String.Set.t
 
 type transition = {
-	read	: char;
-	to_state: string;
-	write	: char;
+	read	: symbol;
+	to_state: state;
+	write	: symbol;
 	action	: action
+}
+
+type transition_table = (state * symbol, transition) Core.Map.Poly.t
+
+type tape = {
+	left	: symbol list;
+	head	: symbol;
+	right	: symbol list;
 }
 
 type error =
@@ -15,12 +31,6 @@ type error =
 	| Unknown_state of string
 	| Initial_not_in_states
 	| Finals_not_subset_of_states
-	| Duplicate_transitions of string * char
-	| Machine_blocked of string * char
+	| Duplicate_transitions of state * symbol
+	| Machine_blocked of state * symbol
 	| Default_error of string
-
-type tape = {
-	left	: char list;
-	head	: char;
-	right	: char list;
-}

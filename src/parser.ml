@@ -166,8 +166,8 @@ let field name fields =
 
 let action_of_string x =
 	match x with
-	| "LEFT"  -> LEFT
-	| "RIGHT" -> RIGHT
+	| "LEFT"  -> Left
+	| "RIGHT" -> Right
 	| _ -> assert false
 
 let transition_of_fields fields =
