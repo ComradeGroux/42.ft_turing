@@ -19,25 +19,24 @@ let init_machine(filepath: string) : turing =
 		transitions = transitions
 	}
 
-let run (input_tape: tape) (machine: turing) =
-			let rec loop tape state =
-				if Core.Set.mem machine.finals state then begin
-					Printer.print_end_state tape state
-				end	else
-						let transition = Core.Map.find machine.transitions (state, tape.head)
-						in match transition with
-						| None -> Printer.print_error(
-								"Machine blocked: no transition for (" ^
-								state ^ ", " ^ String.make 1 tape.head ^ ")"
-							); exit 1
-						| Some v -> begin
-								Printer.print_current_state tape state v;
-								let tape = { tape with head = v.write } in
-								let updated_tape = match v.action with
-									| Left -> Tape.move_left tape machine.blank
-									| Right -> Tape.move_right tape machine.blank
-								in
-								loop updated_tape v.to_state
-							end
-
-			in loop input_tape machine.initial
+let run (machine: turing) (input_tape: tape) =
+	let rec loop tape state =
+		if Core.Set.mem machine.finals state then begin
+			Printer.print_end_state tape state
+		end	else
+				let transition = Core.Map.find machine.transitions (state, tape.head)
+				in match transition with
+				| None -> Printer.print_error(
+						"Machine blocked: no transition for (" ^
+						state ^ ", " ^ String.make 1 tape.head ^ ")"
+					); exit 1
+				| Some v -> begin
+						Printer.print_current_state tape state v;
+						let tape = { tape with head = v.write } in
+						let updated_tape = match v.action with
+							| Left -> Tape.move_left tape machine.blank
+							| Right -> Tape.move_right tape machine.blank
+						in
+						loop updated_tape v.to_state
+					end
+	in loop input_tape machine.initial

@@ -42,6 +42,10 @@ let print_banner () =
   ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
 |} ^ reset)
 
+let print_start () =
+	print_endline (bold ^ yellow ^ "Machine started !" ^ reset);
+	print_endline "│"
+
 let print_error (error: string) =
   prerr_endline (bold ^ red ^ "Error: " ^ reset ^ error)
 
@@ -56,9 +60,9 @@ let print_tape t =
 	in
 	print_string (yellow ^ "[ " ^ reset);
 	print_char_list (List.rev t.left);
-	print_string (cyan ^ "<" ^ reset);
-	print_string (String.make 1 t.head);
-	print_string (cyan ^ ">" ^ reset);
+	(* print_string (cyan ^ "<" ^ reset); *)
+	print_string (bold ^ magenta ^ String.make 1 t.head ^ reset);
+	(* print_string (cyan ^ ">" ^ reset); *)
 	print_char_list t.right;
 	print_string (yellow ^ " ]" ^ reset)
 
@@ -80,7 +84,7 @@ let print_machine (machine: turing) =
 	let label name = blue ^ name ^ reset in
 	let to_list lst = "[ " ^ String.concat ", " lst ^ " ]" in
 	let alphabet = List.map (String.make 1) (Core.Set.to_list machine.alphabet) in
-	print_endline "║";
+	print_endline "│";
 	print_endline (bold ^ yellow ^ machine.name ^ reset);
 	print_endline (label "Alphabet: " ^ to_list alphabet);
 	print_endline (label "Blank:    " ^ String.make 1 machine.blank);
@@ -95,7 +99,7 @@ let print_machine (machine: turing) =
 	print_endline ""
 
 let print_input_tape (tape: tape) =
-	print_endline "║";
+	print_endline "│";
 	print_string (blue ^ "Tape:     " ^ reset);
 	print_tape tape;
 	print_endline "";
