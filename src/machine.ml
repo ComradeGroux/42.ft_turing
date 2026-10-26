@@ -19,37 +19,37 @@ class turing (filepath: string) =
 		method transitions	: transition_table = transitions
 
 		method run (expr: string) =
-				let expr_list = Core.String.to_list expr in
-				let input_tape = match expr_list with
-					| [] -> assert false
-					| head::tail -> { left = [] ; head = head ; right = tail }
-				in
-				let rec loop tape state =
-					if Core.Set.mem self#finals state then begin
-						self#print_tape tape;
-						print_endline "";
-						print_endline ("Final state reached: " ^ state)
-					end	else
-							let transition = Core.Map.find self#transitions (state, tape.head)
-							in match transition with
-							| None ->  prerr_endline (
+			let expr_list = Core.String.to_list expr in
+			let input_tape = match expr_list with
+				| [] -> assert false
+				| head::tail -> { left = [] ; head = head ; right = tail }
+			in
+			let rec loop tape state =
+				if Core.Set.mem self#finals state then begin
+					self#print_tape tape;
+					print_endline "";
+					print_endline ("Final state reached: " ^ state)
+				end	else
+						let transition = Core.Map.find self#transitions (state, tape.head)
+						in match transition with
+						| None ->  prerr_endline (
 								"Error: machine blocked: no transition for (" ^
 								state ^ ", " ^ String.make 1 tape.head ^ ")"
 							); exit 1
-							| Some v-> begin
-									self#print_tape tape;
-									print_string " >>>>> Transition: ";
-									self#print_transition state v;
-									print_endline "";
-									let tape = {tape with head = v.write} in
-									let updated_tape = match v.action with
-										| Left -> self#move_left tape
-										| Right -> self#move_right tape
-									in
-									loop updated_tape v.to_state
-								end
+						| Some v -> begin
+								self#print_tape tape;
+								print_string " >>>>> Transition: ";
+								self#print_transition state v;
+								print_endline "";
+								let tape = { tape with head = v.write } in
+								let updated_tape = match v.action with
+									| Left -> self#move_left tape
+									| Right -> self#move_right tape
+								in
+								loop updated_tape v.to_state
+							end
 
-				in loop input_tape self#initial 
+			in loop input_tape self#initial
 
 		method private print_tape t =
 			let rec print_char_list lst =

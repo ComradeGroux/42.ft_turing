@@ -3,10 +3,10 @@ open Printer
 
 let extract_result_or_exit res =
 	let print_err_and_exit str err =
-		prerr_endline ("Error: " ^ str ^ err) ; exit 1
+		print_error (str ^ err) ; exit 1
 	in match res with
 	| Ok value -> value
-	| Error (Json_error err) -> print_err_and_exit " JSON error: " err
+	| Error (Json_error err) -> print_err_and_exit "JSON error: " err
 	| Error (Missing_field err) -> print_err_and_exit "Missing field: " err
 	| Error (Invalid_symbol err) -> print_err_and_exit "Invalid symbol: " err
 	| Error (Blank_not_in_alphabet) -> print_err_and_exit "Blank: " "Not in alphabet"
@@ -18,7 +18,7 @@ let extract_result_or_exit res =
 
 let check_tape_validity (input: string) (alphabet: symbol_set) (blank: symbol) =
 	if Core.String.is_empty input then begin
-		prerr_endline ("Error: Tape can't be empty !");
+		print_error "Tape can't be empty !";
 		exit 1
 	end else
 		match Core.String.find input ~f:(
@@ -27,20 +27,20 @@ let check_tape_validity (input: string) (alphabet: symbol_set) (blank: symbol) =
 		| None -> ()
 		| Some c -> begin
 			if Core.Char.equal c blank then
-				prerr_endline ("Error: Tape can't contain blank character " ^ String.make 1 c)
+				print_error ("Tape can't contain blank character " ^ String.make 1 c)
 			else
-				prerr_endline ("Error: '" ^ String.make 1 c ^ "' is not in character set !");
+				print_error ("'" ^ String.make 1 c ^ "' is not in character set !");
 			exit 1
 		end
 
 let check_filepath_validity filepath =
 	if Sys.file_exists filepath then begin
 		if Sys.is_directory filepath then begin
-			prerr_endline ("Error: '" ^ filepath ^ "' is a directory");
+			print_error ("'" ^ filepath ^ "' is a directory");
 			exit 1
 		end
 	end else begin
-		prerr_endline ("Error: '" ^ filepath ^ "' does not exist");
+		print_error ("'" ^ filepath ^ "' does not exist");
 		exit 1
 	end
 
@@ -242,6 +242,6 @@ let check_number_arguments_and_help argv =
 	match Array.length argv with
 	| 3 -> ()
 	| _ ->
-		print_error("Wrong number of arguments.\n");
+		print_error "Wrong number of arguments.\n";
 		print_help ();
 		exit 1
