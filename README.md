@@ -3,7 +3,47 @@ The goal of this project is to write a program able to simulate a single headed,
 
 ## Machines
 
-### 3 - Zero One Dectection
+### 1 - Unary addition
+The rules are:
+- Sequence of addition
+- The sequence must be terminated by '='
+
+Example:
+- Pass: 11+1=, 11+1+1=
+- Fail: 1, 11=, 1+1+=
+
+The machine:
+- Logic: Find '=' and replace it by the blank character -> Replace the character just before by '=' -> Find the last '+' and Replace it by '1' -> Find the new last '+' -> Repeat
+- States:
+    - **scanright**: Goes until it found '=' and then move to *addone*.
+    - **addone**: Replace '1' by '=' and then move to *replaceone*.
+    - **replaceone**: Goes to the last '+' (from Right to Left) and then move to *end*.
+    - **end**: Check if there still is something to do (Found '+' -> move to *scanright*). Otherwise *HALT* the machine.
+    - **HALT**: End state.
+
+
+### 2 - Is Palindrome
+The rule are:
+- Sequence of '0' and '1'
+
+Example:
+- Pass: 1, 101, 010010
+- Fail: 01, 1101, 0100101
+
+The machine:
+- Logic: Check first character and cross it with '-' -> Go to the end of the tape and if it is the same character write 'y' or 'n' otherwise -> Goes back to the first character that is not blank or '-' -> Repeat
+- States:
+    - **init**: Validate the first character and move to the right state (*get_last_zero* or *get_last_one*).
+    - **get_last_zero**: Goes to the end of the tape and then call *is_zero*.
+    - **is_zero**: Verify that the character is '0'. *deny* it if necessary, move to *get_first_char* otherwise.
+    - **get_last_one**: Goes to the end of the tape and then call *is_one*.
+    - **is_one**: Verify that the character is '1'. *deny* it if necessary, move to *get_first_char* otherwise.
+    - **get_first_char**: Return to the tape's beginning and then move to *init*
+    - **deny**: Goes to the end of the tape, write 'n' and then *HALT*. Used if *is_zero* or *is_one* failed
+    - **HALT**: End state
+
+
+### 3 - Zero One Detection
 The rules are:
 - Sequence of '0' are always before sequence of '1'
 - There must be an equal number of '0' and '1'
