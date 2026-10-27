@@ -39,6 +39,8 @@ setup.log
 _opam/
 
 ft_turing
+machine_encoder
+utm_builder
 .pdf
 .txt
 
