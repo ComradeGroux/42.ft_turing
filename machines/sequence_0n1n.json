@@ -1,5 +1,5 @@
 {
-	"name" : "zero_one_detection",
+	"name" : "sequence_0n1n",
 	"alphabet": [ "1", "0", "a", "b", ".", "y", "n" ],
 	"blank" : ".",
 	"states" : [ "START", "PARSE", "REWIND", "ZERO", "ONE", "AB", "YES", "NO", "END" ],
