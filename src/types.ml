@@ -9,13 +9,23 @@ type state = string
 type state_set = Core.String.Set.t
 
 type transition = {
-	read	: symbol;
+	read		: symbol;
 	to_state: state;
-	write	: symbol;
+	write		: symbol;
 	action	: action
 }
 
 type transition_table = (state * symbol, transition) Core.Map.Poly.t
+
+type turing = {
+	name				: string;
+	alphabet		: symbol_set;
+	blank				: symbol;
+	states			: state_set;
+	initial			: state;
+	finals			: state_set;
+	transitions	: transition_table
+}
 
 type tape = {
 	left	: symbol list;
