@@ -43,10 +43,10 @@ The machine:
     - **HALT**: End state
 
 
-### 3 - Zero One Detection
+### 3 - Sequence_0n1n
 The rules are:
 - Sequence of '0' are always before sequence of '1'
-- There must be an equal number of '0' and '1'
+- There must be an equal number of '0' and '1' to satisfy $0^n1^n$
 
 Example:
 - Pass: 01, 0011, 000111
@@ -64,8 +64,22 @@ The machine:
     - **YES**/**NO**: Result states. Pass though all characters no matter where we are to the end of the input.
     - **END**: End state. Prints 'y' or 'n' depend on Result states.
 
+### 4 - Sequence_02n
+The rules are:
+- Only sequence of '0'
+- The number of '0' must be $0^{2n}$. In another word, any even number of '0' is valid.
 
+Example:
+- Pass: 00 ($0^{2*1}$), 0000 ($0^{2*2}$), 000000 ($0^{2*3}$)
+- Fail: 0, 000, 00000
 
+The machine:
+- Logic: Start in state EVEN, which mean position EVEN (pos = 0) -> move right into ODD (pos = 1) -> move right into EVEN (pos = 2) -> ... -> until the end, if end reached and state is EVEN then 'y' and END
+- States:
+    - **EVEN**: Position is even.
+    - **ODD**: Position is odd.
+    - **NO**: Input is invalid, move all the way to the end and 'n'.
+    - **END**: End state just to stop the machine.
 
 ## Ressources
 - [Core lib documentation](https://ocaml.org/p/core/v0.17.2/doc/core/Core/index.html)
