@@ -232,16 +232,46 @@ let get_transitions json =
 		end
 	end
 
-let check_number_arguments_and_help argv =
+let read_inputs (inputs: string) : string list =
+	check_filepath_validity inputs;
+	let file =
+		try
+			open_in inputs
+		with
+			| Sys_error msg -> print_error msg; exit 1
+	in
+	let try_read () =
+		try
+			Some (input_line file)
+		with
+			| End_of_file -> None
+			| Sys_error msg -> print_error msg; exit 1
+	in
+	(* Lines are trimmed (handles \r and trailing spaces), empty lines are skipped *)
+	let rec loop acc =
+		match try_read () with
+		| Some s ->
+			let s = String.trim s in
+			if String.equal s "" then loop acc else loop (s :: acc)
+		| None -> close_in file; List.rev acc in
+	loop []
+
+let check_number_arguments_and_help (argv: string array) : mode =
 	(* If -h/--help is anywhere then print help and exit, doesn't matter argc *)
 	if Array.exists (fun x -> String.equal x "--help" || String.equal x "-h") argv then begin
 		print_help ();
 		exit 0
 	end;
 
-	match Array.length argv with
-	| 3 -> ()
+	match Array.to_list argv with
+	| [_; _; "-c"]
+	| [_; _; "--complexity"] ->
+		print_error "Missing input file.\n";
+		exit 1
+	| [_; json; input] -> Normal (json, input)
+	| [_; json; "-c"; inputs]
+	| [_; json; "--complexity"; inputs] -> Complexity (json, inputs)
 	| _ ->
-		print_error "Wrong number of arguments.\n";
+		print_error "Invalid argument.\n";
 		print_help ();
 		exit 1

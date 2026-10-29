@@ -11,12 +11,18 @@ let magenta = "\027[35m"
 let cyan = "\027[36m"
 
 let print_help () =
-		print_endline (	"usage: ft_turing [-h] jsonfile input\n\n"				^
-						"positional arguments:\n"								^
-						"    jsonfile      json description of the machine\n"	^
-						"    input         input of the machine\n\n"			^
-						"optional arguments:\n"									^
-						"    -h, --help    show this help message and exit")
+	print_endline (
+		"usage: ft_turing [-h] jsonfile input\n"										^
+		"       ft_turing [-h] jsonfile -c inputs_file\n\n"								^
+		"positional arguments:\n"														^
+		"    jsonfile                        json description of the machine\n"		^
+		"    input                           input of the machine\n\n"					^
+		"optional arguments:\n"															^
+		"    -h, --help                      show this help message and exit\n"		^
+		"    -c, --complexity inputs_file    estimate the time complexity of the\n"	^
+		"                                    machine from the inputs in inputs_file\n"	^
+		"                                    (one input per line, at least 3 of different lengths)"
+	)
 
 let print_banner () =
 	print_endline "";

@@ -44,3 +44,8 @@ type error =
 	| Duplicate_transitions of state * symbol
 	| Machine_blocked of state * symbol
 	| Default_error of string
+
+(* Normal -> Json path + input
+	 Complexity -> Json path + inputfile
+*)
+type mode = Normal of (string * string) | Complexity of (string * string)
