@@ -1,5 +1,3 @@
-open Types
-
 let normal_mode (json: string) (input: string) =
 	Printer.print_banner ();
 
