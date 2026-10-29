@@ -2,7 +2,6 @@
 The goal of this project is to write a program able to simulate a single headed, single tape Turing machine from a machine description provided in json.
 
 ## Machines
-
 ### 1 - Unary addition
 The rules are:
 - Sequence of addition
@@ -81,5 +80,20 @@ The machine:
     - **NO**: Input is invalid, move all the way to the end and 'n'.
     - **END**: End state just to stop the machine.
 
+## Bonus
+According to the article by abcdofalgorithms.wordpress.com [linked in Ressources](#ressources):
+***The running time or time complexity of M is the function , where  is the maximum number of steps that M uses on any input of length n.***
+
+A step is composed of:
+1. Reading the input symbol under R/W head on the tape.
+2. Calculating the next state of Turing machine, output symbol to write and movement of R/W head either left or right.
+3. Write the symbol on the tape.
+4. Shift the R/W head.
+
+
+
 ## Ressources
 - [Core lib documentation](https://ocaml.org/p/core/v0.17.2/doc/core/Core/index.html)
+- [Time complexity for Turing Machine](https://abcdofalgorithms.wordpress.com/2014/11/26/how-to-compute-time-complexity-in-turing-machine/)
+- [Analysis of algorithms](https://www.geeksforgeeks.org/dsa/analysis-of-algorithms/)
+- [Empirical orders of growth](https://en.wikipedia.org/wiki/Analysis_of_algorithms#Empirical_orders_of_growth)
