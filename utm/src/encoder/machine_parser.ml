@@ -231,3 +231,22 @@ let get_transitions json =
 			end
 		end
 	end
+
+let init_machine(filepath: string) : turing =
+	let json = extract_result_or_exit (extract_json filepath) in
+	let name = extract_result_or_exit (get_name json) in
+	let alphabet = extract_result_or_exit (get_alphabet json) in
+	let blank = extract_result_or_exit (get_blank json) in
+	let states = extract_result_or_exit (get_states json) in
+	let initial = extract_result_or_exit (get_initial json) in
+	let finals = extract_result_or_exit (get_finals json) in
+	let transitions = extract_result_or_exit (get_transitions json) in
+	{
+		name = name;
+		alphabet = alphabet;
+		blank = blank;
+		states = states;
+		initial = initial;
+		finals = finals;
+		transitions = transitions
+	}
