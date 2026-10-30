@@ -40,3 +40,29 @@ let run (machine: turing) (input_tape: tape) =
 					loop updated_tape v.to_state
 				end
 	in loop input_tape machine.initial
+
+
+let time_limit = 10.
+let check_interval = 1_000_000
+
+let run_complexity (machine: turing) (t_len: tape_len) (input_tape: tape) : time_data =
+	let deadline = Sys.time () +. time_limit in
+
+	let rec loop tape state acc =
+		if Core.Set.mem machine.finals state then Accept (t_len, acc)
+		else
+			if acc mod check_interval = 0 && Sys.time () > deadline
+				then Reject (t_len, "Time out")
+			else
+				let transition = Core.Map.find machine.transitions (state, tape.head)
+				in match transition with
+				| None -> Reject (t_len, "Blocked")
+				| Some v -> begin
+						let tape = { tape with head = v.write } in
+						let updated_tape = match v.action with
+							| Left -> Tape.move_left tape machine.blank
+							| Right -> Tape.move_right tape machine.blank
+						in
+						loop updated_tape v.to_state (acc + 1)
+					end
+	in loop input_tape machine.initial 0

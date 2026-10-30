@@ -58,6 +58,9 @@ let print_error (error: string) =
 let print_success (success: string) =
 	print_endline (bold ^ green ^ "Success: " ^ reset ^ success)
 
+let print_message (message: string) =
+	print_endline message
+
 let print_tape t =
 	let rec print_char_list lst =
 		match lst with
@@ -121,3 +124,18 @@ let print_current_state (tape: tape) (state: state) (v: transition) =
 	print_string (gray ^ " >>>>> " ^ reset);
 	print_transition state v;
 	print_endline ""
+
+let print_step (step: time_data) =
+	match step with
+	| Accept (l, s) -> begin
+			print_endline(
+				"( " ^ string_of_int l ^
+				" : " ^ string_of_int s ^ " )"
+			) 
+		end
+	| Reject (l, s) -> begin
+			print_endline(
+					"( " ^ string_of_int l ^
+					" : " ^ s ^ " )"
+			)
+		end

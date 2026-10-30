@@ -16,7 +16,7 @@ let normal_mode (json: string) (input: string) =
 	Printer.print_start ();
 	Machine.run machine tape;
 
-	print_endline ""
+	Printer.print_message ""
 
 let complexity_mode (json: string) (inputs_path: string) =
 	Printer.print_banner ();
@@ -43,13 +43,21 @@ let complexity_mode (json: string) (inputs_path: string) =
 	Printer.print_success "All tape initialized !";
 
 	(* Steps:
-	-> Run machine in silence mode, return number of step. Set step limit to handle infinity loop.
-	-> create tuple of (input len, step nb)
 	-> use some math stuffs to guess time complexity
 	-> profit
 	*)
+	Printer.print_message "Starting time complexity estimation";
+	Printer.print_message "(input len : steps)";
+	let steps = List.map (
+		fun tape -> 
+			let t_len = Tape.length tape in
+			let step = Machine.run_complexity machine t_len tape in
+			Printer.print_step step;
+			step
+	) tapes
+	in
 
-	print_endline ""
+	Printer.print_message ""
 
 
 let () =

@@ -46,6 +46,13 @@ type error =
 	| Default_error of string
 
 (* Normal -> Json path + input
-	 Complexity -> Json path + inputfile
-*)
+	 Complexity -> Json path + inputfile *)
 type mode = Normal of (string * string) | Complexity of (string * string)
+
+type tape_len = int
+
+type steps = int
+
+type message = string
+
+type time_data = Accept of (tape_len * steps) | Reject of (tape_len * message)
