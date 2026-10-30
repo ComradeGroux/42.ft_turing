@@ -34,7 +34,8 @@ let clean_data (data: time_data list) : time list =
 let linear_regression (data: (float * float) list) : (float * float) =
   (1., 1.)
 
-let compute_error ()
+let compute_error (points: (float * float) list) (thetas: (float * float)) : float =
+  1.
 
 let estimate (data: time_data list) =
   let cleaned = clean_data data
@@ -48,12 +49,12 @@ let estimate (data: time_data list) =
       ) cleaned
       in
       let thetas = linear_regression c_set in
-      let error = compute_error in
+      let error = compute_error c_set thetas in
       {
-        bigO: c;
-        m: fst thetas;
-        b: snd thetas;
-        error: error
+        bigO = c;
+        m = fst thetas;
+        b = snd thetas;
+        error = error
       }
   ) Complexity.all
   in ()

@@ -10,9 +10,9 @@ let transform (c: bigO) (n: float) : float =
   | Logarithmic -> log n
   | Linear -> n
   | Linearithmic -> n *. log n
-  | Quadratic -> sqrt n
+  | Quadratic -> n ** 2.
   | Cubic -> n ** 3.
-  | Exponential -> n *. 2.
+  | Exponential -> 2. ** n
   | Factorial -> factorial n
 
 let string_of_complexity (c: bigO) : string =
