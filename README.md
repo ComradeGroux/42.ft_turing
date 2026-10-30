@@ -84,11 +84,17 @@ The machine:
 According to the article by abcdofalgorithms.wordpress.com [linked in Ressources](#ressources):
 ***The running time or time complexity of M is the function , where  is the maximum number of steps that M uses on any input of length n.***
 
+### Step definition
 A step is composed of:
 1. Reading the input symbol under R/W head on the tape.
 2. Calculating the next state of Turing machine, output symbol to write and movement of R/W head either left or right.
 3. Write the symbol on the tape.
 4. Shift the R/W head.
+
+### Linear regression
+To find the best matching time complexity, we will run the machine on a big number of valid inputs of various input length. The for each time complexity type, we will compute the predicted number of steps based on the input and compare to the real number of steps. We will then attempt to construct a straight line that minimize the error between the predicted value and the real value. This is a **simple linear regression with 1 independent variable**. The best fitted line will be our pick for time complexity.
+
+For a data set of single feature, we will use the closed form of linear regression called **Normal Equation**.
 
 
 
@@ -96,4 +102,5 @@ A step is composed of:
 - [Core lib documentation](https://ocaml.org/p/core/v0.17.2/doc/core/Core/index.html)
 - [Time complexity for Turing Machine](https://abcdofalgorithms.wordpress.com/2014/11/26/how-to-compute-time-complexity-in-turing-machine/)
 - [Analysis of algorithms](https://www.geeksforgeeks.org/dsa/analysis-of-algorithms/)
-- [Empirical orders of growth](https://en.wikipedia.org/wiki/Analysis_of_algorithms#Empirical_orders_of_growth)
+- [Linear regression](https://www.geeksforgeeks.org/machine-learning/ml-linear-regression/)
+- [Normal equation for linear regression](https://www.geeksforgeeks.org/machine-learning/ml-normal-equation-in-linear-regression/)

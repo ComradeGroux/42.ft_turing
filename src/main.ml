@@ -58,7 +58,7 @@ let complexity_mode (json: string) (inputs_path: string) =
 			step
 	) tapes
 	in
-	let filtered = Estimator.clean_data steps in
+	Estimator.estimate steps;
 
 	Printer.print_message ""
 

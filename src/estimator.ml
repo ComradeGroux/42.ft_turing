@@ -29,3 +29,31 @@ let clean_data (data: time_data list) : time list =
   Core.List.remove_consecutive_duplicates
     ~which_to_keep:`First
     ~equal:(fun (l1, _) (l2, _) -> l1 = l2) sorted
+
+(* data is (f(n), steps) *)
+let linear_regression (data: (float * float) list) : (float * float) =
+  (1., 1.)
+
+let compute_error ()
+
+let estimate (data: time_data list) =
+  let cleaned = clean_data data
+  in
+  let complexities = List.map (
+    fun c ->
+      (* set f(n) and convert step to float *)
+      let c_set = List.map (
+        fun (len, steps) ->
+          (Complexity.transform c (float_of_int len), float_of_int steps)
+      ) cleaned
+      in
+      let thetas = linear_regression c_set in
+      let error = compute_error in
+      {
+        bigO: c;
+        m: fst thetas;
+        b: snd thetas;
+        error: error
+      }
+  ) Complexity.all
+  in ()

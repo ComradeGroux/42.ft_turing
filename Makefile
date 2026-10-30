@@ -23,6 +23,7 @@ SOURCES =	main.ml			\
 			parser.ml		\
 			machine.ml		\
 			tape.ml			\
+			complexity.ml	\
 			estimator.ml	\
 			types.ml		\
 			printer.ml

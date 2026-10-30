@@ -58,3 +58,15 @@ type message = string
 type time = (tape_len * steps)
 
 type time_data = Accept of time | Reject of (tape_len * message)
+
+type bigO =
+	Constant | Logarithmic | Linear | Linearithmic |
+	Quadratic | Cubic | Exponential | Factorial
+
+
+type complexity = {
+	bigO	: bigO;
+	m			: float;
+	b			: float;
+	error	: float;
+}
