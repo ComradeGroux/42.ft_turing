@@ -55,4 +55,6 @@ type steps = int
 
 type message = string
 
-type time_data = Accept of (tape_len * steps) | Reject of (tape_len * message)
+type time = (tape_len * steps)
+
+type time_data = Accept of time | Reject of (tape_len * message)

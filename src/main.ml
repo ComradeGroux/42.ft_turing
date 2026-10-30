@@ -28,10 +28,12 @@ let complexity_mode (json: string) (inputs_path: string) =
 	Printer.print_machine machine;
 
 	let inputs = Parser.read_inputs inputs_path in
-	let lengths = List.sort_uniq compare (List.map String.length inputs) in
-	if List.length lengths < 3
+	if not (Estimator.enough_lengths (List.map String.length inputs))
 		then begin
-			Printer.print_error "Need inputs of at least 3 different lengths !";
+			Printer.print_error (
+				"Need inputs of at least " ^ string_of_int Estimator.min_lengths ^
+				" different lengths !"
+			);
 			exit 1
 		end;
 	List.iter (
@@ -56,6 +58,7 @@ let complexity_mode (json: string) (inputs_path: string) =
 			step
 	) tapes
 	in
+	let filtered = Estimator.clean_data steps in
 
 	Printer.print_message ""
 
