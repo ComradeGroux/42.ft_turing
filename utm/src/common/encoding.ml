@@ -2,14 +2,12 @@ let universal_blank = '~'
 let rule_separator = '|'
 let transition_separator = ';'
 let zone_delimiter = '#'
-let current = '^'
+let head_position = '^'
 let left = 'L'
 let right = 'R'
 
-let preferred_state_chars = Core.String.to_list "ABCDEFGHIJKMNOPQSTUVWXYZabcdefghijklmnopqrstuvwxyz!\"$%&'()*+,-./:<=>?@[\\]_`{}"
-
-let get_every_reserved_char =
-	Core.Char.Set.of_list [
+let allowed_chars = Core.String.to_list "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!$%&'()*+,-./:<=>?@[]_`{}^#;|~"
+let reserved_chars = [
 		universal_blank ;
 		rule_separator ;
 		transition_separator ;
@@ -17,3 +15,6 @@ let get_every_reserved_char =
 		left ;
 		right
 	]
+let get_every_reserved_char = Core.Char.Set.of_list reserved_chars
+let universe = List.filter (fun c -> not (List.mem c reserved_chars)) allowed_chars
+let tape_chars = universe @ List.filter (fun c -> c <> universal_blank) reserved_chars

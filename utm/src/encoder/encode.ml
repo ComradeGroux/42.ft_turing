@@ -64,7 +64,7 @@ let build_states_dict (machine : turing) =
 	let forbidden_chars = Core.Set.union machine.alphabet (Core.Char.Set.singleton machine.blank) in
 	let forbidden_chars = Core.Set.union Encoding.get_every_reserved_char forbidden_chars in
 
-	let available_chars = Core.List.filter Encoding.preferred_state_chars ~f:(fun c -> not (Core.Set.mem forbidden_chars c)) in
+	let available_chars = Core.List.filter Encoding.allowed_chars ~f:(fun c -> not (Core.Set.mem forbidden_chars c)) in
 
 	let states = Core.Set.to_list machine.states in
 	let state_count = Core.List.length states in
@@ -79,6 +79,15 @@ let build_states_dict (machine : turing) =
 let encode_machine (machine: turing) =
 	check_if_alphabet_ok machine ;
 	let dict = build_states_dict machine in
+	(encode_transitions machine dict) ^ Core.String.of_char Encoding.rule_separator ^
+	(encode_finals machine dict) ^ Core.String.of_char Encoding.rule_separator ^
+	(encode_blank machine) ^ Core.String.of_char Encoding.rule_separator ^
+	(encode_initial machine dict) ^ Core.String.of_char Encoding.zone_delimiter ^
+	Core.String.of_char Encoding.head_position
+	
+(*
+	(* THIS CONTAINS EVERY INFORMATION ABOUT THE MACHINE (except name) *)
+	(*   BUT WE DON'T NEED alphabet OR THE STATES NAME (for exemple)   *)
 	(encode_alphabet machine) ^	Core.String.of_char Encoding.rule_separator ^
 	(encode_blank machine) ^ Core.String.of_char Encoding.rule_separator ^
 	(encode_states machine dict) ^ Core.String.of_char Encoding.rule_separator ^
@@ -86,3 +95,4 @@ let encode_machine (machine: turing) =
 	(encode_finals machine dict)  ^ Core.String.of_char Encoding.rule_separator ^
 	(encode_transitions machine dict) ^ Core.String.of_char Encoding.rule_separator ^
 	(encode_initial machine dict) ^ Core.String.of_char Encoding.zone_delimiter
+*)
