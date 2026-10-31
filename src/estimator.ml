@@ -69,12 +69,23 @@ let linear_regression (data: (float * float) list) : (float * float) option =
     Some (m, b)
 
 
-(*  *)
-let compute_error (points: (float * float) list) (thetas: (float * float)) : float =
-  1.
+(* data is (f(n), steps) *)
+(*
+  Formula:
+  sum square error = sum( (real step - predicted step) ^ 2 )
+*)
+let compute_error (data: (float * float) list) (thetas: (float * float)) : float =
+  let m = fst thetas in
+  let b = snd thetas in
+  let sum_error = List.fold_left (
+    fun acc (fn, step) -> acc +. (step -. (m *. fn +. b)) ** 2. 
+  ) 0. data
+  in
+  let avg_error = sum_error /. float_of_int (List.length data) in
+  Float.sqrt avg_error
 
 (* A linear function is y = mx + b; We try to find the best fit m and b *)
-let estimate (data: time_data list) =
+let estimate (data: time_data list) (name: string) =
   let cleaned = clean_data data
   in
   let complexities = List.filter_map (
@@ -104,5 +115,15 @@ let estimate (data: time_data list) =
             error = error
           }
   ) Complexity.all
-  in (* take the smallest error here *) 
-  ()
+  in
+  match complexities with
+  | [] -> Printer.print_error "No complexity could be estimated !"
+  | h :: t ->
+    let best = List.fold_left (
+      fun best c -> if c.error < best.error then c else best
+    ) h t
+    in
+    Printer.print_success (
+      "Estimated complexity for " ^ name ^ " is: " ^ Complexity.string_of_complexity best.bigO ^
+      " (Error " ^ string_of_int (int_of_float best.error) ^ " step(s))"
+    )

@@ -1,6 +1,34 @@
 # 42.ft_turing
 The goal of this project is to write a program able to simulate a single headed, single tape Turing machine from a machine description provided in json.
 
+## Run
+Build with `make`
+```
+usage: ft_turing [-h] jsonfile input
+       ft_turing [-h] jsonfile -c inputs_file
+
+positional arguments:
+    jsonfile                        json description of the machine
+    input                           input of the machine
+
+optional arguments:
+    -h, --help                      show this help message and exit
+    -c, --complexity inputs_file    estimate the time complexity of the
+                                    machine from the inputs in inputs_file
+                                    (one input per line, at least 3 of different lengths)
+```
+
+Examples:
+```
+./ft_turing -h
+./ft_turing machines/unary_addition.json "111+11="
+./ft_turing machines/unary_sub.json "111-11="
+./ft_turing machines/is_palindrome.json "0110"
+./ft_turing machines/sequence_0n1n.json "0011"
+./ft_turing machines/sequence_02n.json "0000"
+./ft_turing machines/unary_sub.json -c input/unary_sub.txt
+```
+
 ## Machines
 ### 1 - Unary addition
 The rules are:
@@ -81,8 +109,17 @@ The machine:
     - **END**: End state just to stop the machine.
 
 ## Bonus
-According to the article by abcdofalgorithms.wordpress.com [linked in Ressources](#ressources):
-***The running time or time complexity of M is the function , where  is the maximum number of steps that M uses on any input of length n.***
+### Usage
+Run a machine with `-c` (or `--complexity`) and a file of inputs, one per line. Inputs must cover at least 3 different lengths. Inputs that time out (10 s) or get blocked are dropped from the estimation.
+
+Example command for each machine:
+```
+./ft_turing machines/unary_addition.json -c input/unary_addition.txt
+./ft_turing machines/unary_sub.json -c input/unary_sub.txt
+./ft_turing machines/is_palindrome.json -c input/is_palindrome.txt
+./ft_turing machines/sequence_0n1n.json -c input/sequence_0n1n.txt
+./ft_turing machines/sequence_02n.json -c input/sequence_02n.txt
+```
 
 ### Step definition
 A step is composed of:
@@ -92,14 +129,27 @@ A step is composed of:
 4. Shift the R/W head.
 
 ### Linear regression
-To find the best matching time complexity, we will run the machine on a big number of valid inputs of various input length. The for each time complexity type, we will compute the predicted number of steps based on the input and compare to the real number of steps. We will then attempt to construct a straight line that minimize the error between the predicted value and the real value. This is a **simple linear regression with 1 independent variable**. The best fitted line will be our pick for time complexity.
+To find the best matching time complexity, we will run the machine on a big number of valid inputs of various input length. Then for each time complexity type, we will compute the predicted number of steps based on the input and compare to the real number of steps. We will then attempt to construct a straight line that minimize the error between the predicted value and the real value. This is a **simple linear regression with 1 independent variable**. The best fitted line will be our pick for time complexity.
 
-For a data set of single feature, we will use the closed form of linear regression called **Normal Equation**.
+For a data set of single feature, we will use the closed form of linear regression called **Normal Equation**. This will produce thetas for our linear function.
 
+Using the thetas produced by linear regression. We will construct the list of predicted steps, then compare to the real steps produced by our machine to compute average error in steps.
 
+The complexity with the smallest error is picked.
+
+### Results
+
+| Machine | Estimated | Error |
+|---|---|---|
+| unary_addition | O(n) | 0 |
+| sequence_02n | O(n) | 0 |
+| unary_sub | O(n²) | 147 |
+| is_palindrome | O(n²) | 265 |
+| sequence_0n1n | O(n²) | 530 |
 
 ## Ressources
 - [Core lib documentation](https://ocaml.org/p/core/v0.17.2/doc/core/Core/index.html)
 - [Time complexity for Turing Machine](https://abcdofalgorithms.wordpress.com/2014/11/26/how-to-compute-time-complexity-in-turing-machine/)
 - [Analysis of algorithms](https://www.geeksforgeeks.org/dsa/analysis-of-algorithms/)
-- [Linear regression](https://en.wikipedia.org/wiki/Simple_linear_regression)
+- [Linear regression](https://en.wikipedia.org/wiki/Simple_linear_regression#Formulation_and_computation)
+- [Least square error](https://en.wikipedia.org/wiki/Ordinary_least_squares#Estimation)

@@ -56,7 +56,7 @@ let complexity_mode (json: string) (inputs_path: string) =
 	) tapes
 	in
 	Printer.print_message "";
-	Estimator.estimate steps;
+	Estimator.estimate steps machine.name;
 
 	Printer.print_message ""
 
