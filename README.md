@@ -25,6 +25,7 @@ Examples:
 ./ft_turing machines/unary_sub.json "111-11="
 ./ft_turing machines/is_palindrome.json "0110"
 ./ft_turing machines/sequence_0n1n.json "0011"
+./ft_turing machines/sequence_0n1n_slow.json "0011"
 ./ft_turing machines/sequence_02n.json "0000"
 ./ft_turing machines/unary_sub.json -c input/unary_sub.txt
 ```
@@ -79,6 +80,24 @@ Example:
 - Pass: 01, 0011, 000111
 - Fail: 011, 001, 10, 0101
 
+There are two versions of this machine:
+- `machines/sequence_0n1n.json`: fast version, $O(n \log n)$
+- `machines/sequence_0n1n_slow.json`: slow version, $O(n^2)$
+
+#### Fast version - $O(n \log n)$
+The machine:
+- Logic: Each pass goes from left to right and crosses every other remaining '0' and every other remaining '1' with 'x' (the 1st, 3rd, 5th...), while keeping track of the parity of the remaining '0' and '1'. If the parities are different at the end of the pass then the counts can't be equal -> 'n'. Otherwise rewind and do another pass. Each pass halves the number of remaining '0' and '1', so there are $\log n$ passes of $n$ steps each. If everything is crossed -> 'y'.
+- States:
+    - **START**: Validate the first character being '0'.
+    - **PARSE**: Parse the tape to allow only '0' and '1'.
+    - **REWIND**: Go back to the start of the tape (after PARSE or after a pass).
+    - **PASS**: Start a pass. Skip 'x'. Cross the first '0' found. If a '1' is found first then there are more '1' than '0'. If the end is reached then everything is crossed and the input is valid.
+    - **0_EVEN**/**0_ODD**: Go through the '0', keep track of the parity and cross every other one. If a '1' is found, cross it and move to the '1' states. If the end is reached then there is no '1' left.
+    - **1_EVEN_0_EVEN**/**1_ODD_0_EVEN**/**1_EVEN_0_ODD**/**1_ODD_0_ODD**: Same thing for the '1', while remembering the parity of the '0'. A '0' after a '1' is invalid. At the end of the tape, *REWIND* if the parities match, 'n' otherwise.
+    - **NO**: Result state. Pass through all characters to the end of the input.
+    - **END**: End state. Prints 'y' or 'n' depending on the previous state.
+
+#### Slow version - $O(n^2)$
 The machine:
 - Logic: Find '0' -> Cross '0' with 'a' -> Find next '1' -> cross '1' with 'b' -> Find next '0' -> Cross '0' with 'a' -> Repeat till run out of '0' or '1'
 - States:
@@ -118,6 +137,7 @@ Example command for each machine:
 ./ft_turing machines/unary_sub.json -c input/unary_sub.txt
 ./ft_turing machines/is_palindrome.json -c input/is_palindrome.txt
 ./ft_turing machines/sequence_0n1n.json -c input/sequence_0n1n.txt
+./ft_turing machines/sequence_0n1n_slow.json -c input/sequence_0n1n.txt
 ./ft_turing machines/sequence_02n.json -c input/sequence_02n.txt
 ```
 
@@ -146,7 +166,8 @@ Results for inputs in /input
 | sequence_02n | O(n) | 0 |
 | unary_sub | O(n²) | 147 |
 | is_palindrome | O(n²) | 265 |
-| sequence_0n1n | O(n²) | 530 |
+| sequence_0n1n | O(n log n) | 489 |
+| sequence_0n1n_slow | O(n²) | 530 |
 
 ## Ressources
 - [Core lib documentation](https://ocaml.org/p/core/v0.17.2/doc/core/Core/index.html)
