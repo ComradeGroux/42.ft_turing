@@ -14,6 +14,7 @@ let extract_result_or_exit res =
 	| Error (Initial_not_in_states) -> print_err_and_exit "Initial: " "Not in states"
 	| Error (Finals_not_subset_of_states) -> print_err_and_exit "Finals: " "Not a subset of states"
 	| Error (Duplicate_transitions (str, char)) -> print_err_and_exit ("Transitions: Duplicate of " ^ str ^ " when reading the symbol ") (String.make 1 char)
+	| Error (Invalid_transition err) -> print_err_and_exit "Transition: " err
 	| Error _ -> print_err_and_exit "Default error" ""
 
 let check_tape_validity (input: string) (alphabet: symbol_set) (blank: symbol) =
@@ -52,7 +53,7 @@ let extract_json filepath =
 let get_name json =
 	try
 		Result.ok (Yojson.Safe.Util.(json |> member "name" |> to_string))
-	with _ -> Result.error (Missing_field "alphabet")
+	with _ -> Result.error (Missing_field "name")
 
 let get_alphabet json =
 	let alpha = try
@@ -76,11 +77,14 @@ let get_blank json =
 		match get_alphabet json with
 		| Error _ -> Result.error (Default_error "occured while retrieving the alphabet")
 		| Ok alpha ->
-			let value = value.[0] in
-			if Core.Set.mem alpha value == false then
-				Result.error (Blank_not_in_alphabet)
+			if Core.String.length value <> 1 then
+				Result.error (Invalid_symbol "The blank must be exactly 1 character")
 			else
-				Result.ok value
+				let value = value.[0] in
+				if Core.Set.mem alpha value == false then
+					Result.error (Blank_not_in_alphabet)
+				else
+					Result.ok value
 	end
 
 let get_states json = try
@@ -127,7 +131,7 @@ let parse_transition json =
 			("to_state"	, json |> member "to_state"	|> to_string) ;
 			("write"	, json |> member "write"	|> to_string) ;
 			("action"	, json |> member "action"	|> to_string)])
-	with _ -> (prerr_endline "Error in json: transition: A key miss or was mistyped" ; exit 1)
+	with _ -> failwith "transition"
 
 let check_transitions_state_keys transitions states =
 	if Core.List.for_all transitions ~f:(fun (key, _) -> Core.Set.mem states key) == false then
@@ -211,7 +215,9 @@ let get_transitions json =
 		Result.ok Yojson.Safe.Util.(
 			json |> member "transitions" |> to_assoc |>
 			List.map (fun (state, rules_json) -> (state, convert_each parse_transition rules_json)))
-	with _ -> Result.error (Missing_field "transitions") in
+	with
+		| Failure _ -> Result.error (Invalid_transition "A key is missing or mistyped (read, to_state, write, action)")
+		| _ -> Result.error (Missing_field "transitions") in
 	match transitions with
 	| Error err -> Result.error err
 	| Ok value -> begin

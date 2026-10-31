@@ -44,12 +44,14 @@ let run (machine: turing) (input_tape: tape) =
 
 let time_limit = 10.
 let check_interval = 1_000_000
+let max_steps = 20_000_000
 
 let run_complexity (machine: turing) (t_len: tape_len) (input_tape: tape) : time_data =
 	let deadline = Sys.time () +. time_limit in
 
 	let rec loop tape state acc =
 		if Core.Set.mem machine.finals state then Accept (t_len, acc)
+		else if acc >= max_steps then Reject (t_len, "Step limit")
 		else
 			if acc mod check_interval = 0 && Sys.time () > deadline
 				then Reject (t_len, "Time out")

@@ -42,6 +42,7 @@ type error =
 	| Initial_not_in_states
 	| Finals_not_subset_of_states
 	| Duplicate_transitions of state * symbol
+	| Invalid_transition of string
 	| Machine_blocked of state * symbol
 	| Default_error of string
 

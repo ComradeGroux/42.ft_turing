@@ -183,7 +183,7 @@ The machine:
 
 ## Bonus
 ### Usage
-Run a machine with `-c` (or `--complexity`) and a file of inputs, one per line. Inputs must cover at least 3 different lengths. Inputs that time out (10 s) or get blocked are dropped from the estimation.
+Run a machine with `-c` (or `--complexity`) and a file of inputs, one per line. Inputs must cover at least 3 different lengths. Inputs that time out (10 s), reach the step limit (20 000 000 steps) or get blocked are dropped from the estimation.
 
 Example command for each machine:
 ```
