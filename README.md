@@ -29,6 +29,7 @@ Examples:
 ./ft_turing machines/is_palindrome.json "0110"
 ./ft_turing machines/unary_addition.json "111+11="
 ./ft_turing machines/sequence_0n1n_slow.json "0011"
+./ft_turing machines/extra_binary_counter.json "000"
 ./ft_turing machines/unary_sub.json -c input/unary_sub.txt
 ```
 
@@ -165,6 +166,21 @@ The machine:
     - **SCAN**: Pass through '0'. On '1', write '.' and move to *END*. If the end of the input is reached, move to *END*.
     - **END**: End state.
 
+### Binary_counter
+The rules are:
+- Sequence of '0' and '1', read as a binary number
+
+Example:
+- "000" -> 000, 001, 010, 011, 100, 101, 110, 111 -> "000"
+- "110" -> 110, 111 -> "000"
+
+The machine:
+- Logic: Add 1 to the number until it overflows. An increment starts from the rightmost bit: '1' becomes '0' and the carry moves left, '0' becomes '1' and the increment is done. When the carry passes the leftmost bit, every value has been counted.
+- States:
+    - **GO_RIGHT**: Pass through '0' and '1' to the end of the number. On '.', move left to *INC*.
+    - **INC**: On '1', write '0' and keep moving left (carry). On '0', write '1' and move to *GO_RIGHT*. On '.', the carry overflowed, move to *END*.
+    - **END**: End state.
+
 ## Bonus
 ### Usage
 Run a machine with `-c` (or `--complexity`) and a file of inputs, one per line. Inputs must cover at least 3 different lengths. Inputs that time out (10 s) or get blocked are dropped from the estimation.
@@ -179,6 +195,7 @@ Example command for each machine:
 ./ft_turing machines/is_palindrome.json -c input/is_palindrome.txt
 ./ft_turing machines/unary_addition.json -c input/unary_addition.txt
 ./ft_turing machines/sequence_0n1n_slow.json -c input/sequence_0n1n.txt
+./ft_turing machines/extra_binary_counter.json -c input/extra_binary_counter.txt
 ```
 
 ### Step definition
@@ -210,6 +227,7 @@ Results for inputs in /input
 | is_palindrome | O(n²) | 265 |
 | unary_addition | O(n²) | 441 |
 | sequence_0n1n_slow | O(n²) | 530 |
+| extra_binary_counter | O(2ⁿ) | 0 |
 
 ## Ressources
 - [Core lib documentation](https://ocaml.org/p/core/v0.17.2/doc/core/Core/index.html)
