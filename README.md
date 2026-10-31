@@ -138,10 +138,11 @@ Using the thetas produced by linear regression. We will construct the list of pr
 The complexity with the smallest error is picked.
 
 ### Results
+Results for inputs in /input
 
 | Machine | Estimated | Error |
 |---|---|---|
-| unary_addition | O(n) | 0 |
+| unary_addition | O(n²) | 441 |
 | sequence_02n | O(n) | 0 |
 | unary_sub | O(n²) | 147 |
 | is_palindrome | O(n²) | 265 |
