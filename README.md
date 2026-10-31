@@ -21,12 +21,14 @@ optional arguments:
 Examples:
 ```
 ./ft_turing -h
-./ft_turing machines/unary_addition.json "111+11="
+./ft_turing machines/extra_write_hello.json "h"
+./ft_turing machines/extra_find_1.json "0001011"
+./ft_turing machines/sequence_02n.json "0000"
+./ft_turing machines/sequence_0n1n.json "0011"
 ./ft_turing machines/unary_sub.json "111-11="
 ./ft_turing machines/is_palindrome.json "0110"
-./ft_turing machines/sequence_0n1n.json "0011"
+./ft_turing machines/unary_addition.json "111+11="
 ./ft_turing machines/sequence_0n1n_slow.json "0011"
-./ft_turing machines/sequence_02n.json "0000"
 ./ft_turing machines/unary_sub.json -c input/unary_sub.txt
 ```
 
@@ -127,18 +129,56 @@ The machine:
     - **NO**: Input is invalid, move all the way to the end and 'n'.
     - **END**: End state just to stop the machine.
 
+## Extra
+Additional machines, made to show other time complexities with `-c`.
+
+### Write_hello
+The rules are:
+- Sequence of 'h', 'e', 'l' and 'o'
+
+Example:
+- "h" -> "hello."
+- "hellohello" -> "hello.ello"
+
+The machine:
+- Logic: Ignore the input and overwrite the first 6 cells with "hello." The machine always does exactly 6 steps, whatever the input length -> $O(1)$
+- States:
+    - **FIRST**: Step 1. Write 'h' and move to *SECOND*.
+    - **SECOND**: Step 2. Write 'e' and move to *THIRD*.
+    - **THIRD**: Step 3. Write 'l' and move to *FOURTH*.
+    - **FOURTH**: Step 4. Write 'l' and move to *FIFTH*.
+    - **FIFTH**: Step 5. Write 'o' and move to *SIXTH*.
+    - **SIXTH**: Step 6. Write '.' and move to *END*.
+    - **END**: End state.
+
+### Find_1
+The rules are:
+- Sequence of '0' and '1'
+
+Example:
+- "0001011" -> "000.011"
+- "000" -> "000"
+
+The machine:
+- Logic: Read '0' until the first '1' -> Replace it by '.' and stop. Only the cells up to the first '1' are read, the rest of the tape is never visited.
+- States:
+    - **SCAN**: Pass through '0'. On '1', write '.' and move to *END*. If the end of the input is reached, move to *END*.
+    - **END**: End state.
+
 ## Bonus
 ### Usage
 Run a machine with `-c` (or `--complexity`) and a file of inputs, one per line. Inputs must cover at least 3 different lengths. Inputs that time out (10 s) or get blocked are dropped from the estimation.
 
 Example command for each machine:
 ```
-./ft_turing machines/unary_addition.json -c input/unary_addition.txt
+./ft_turing machines/extra_write_hello.json -c input/extra_write_hello.txt
+./ft_turing machines/extra_find_1.json -c input/extra_find_1.txt
+./ft_turing machines/sequence_02n.json -c input/sequence_02n.txt
+./ft_turing machines/sequence_0n1n.json -c input/sequence_0n1n.txt
 ./ft_turing machines/unary_sub.json -c input/unary_sub.txt
 ./ft_turing machines/is_palindrome.json -c input/is_palindrome.txt
-./ft_turing machines/sequence_0n1n.json -c input/sequence_0n1n.txt
+./ft_turing machines/unary_addition.json -c input/unary_addition.txt
 ./ft_turing machines/sequence_0n1n_slow.json -c input/sequence_0n1n.txt
-./ft_turing machines/sequence_02n.json -c input/sequence_02n.txt
 ```
 
 ### Step definition
@@ -162,11 +202,13 @@ Results for inputs in /input
 
 | Machine | Estimated | Error |
 |---|---|---|
-| unary_addition | O(n²) | 441 |
+| extra_write_hello | O(1) | 0 |
+| extra_find_1 | O(log n) | 0 |
 | sequence_02n | O(n) | 0 |
+| sequence_0n1n | O(n log n) | 489 |
 | unary_sub | O(n²) | 147 |
 | is_palindrome | O(n²) | 265 |
-| sequence_0n1n | O(n log n) | 489 |
+| unary_addition | O(n²) | 441 |
 | sequence_0n1n_slow | O(n²) | 530 |
 
 ## Ressources
