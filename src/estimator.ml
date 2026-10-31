@@ -31,16 +31,53 @@ let clean_data (data: time_data list) : time list =
     ~equal:(fun (l1, _) (l2, _) -> l1 = l2) sorted
 
 (* data is (f(n), steps) *)
-let linear_regression (data: (float * float) list) : (float * float) =
-  (1., 1.)
+(*
+  Normal Equation Formula:
+  m = sum( (f(n)_i - avg_f(n)) (steps_i - avg_steps) ) /
+      sum( (f(n)_i - avg_f(n))^2 )
+  b = avg_steps - m * avg_f(n)
+*)
+(* None if f(n) overflows (or is -inf) *)
+let linear_regression (data: (float * float) list) : (float * float) option =
+  let avg_fn = List.fold_left (
+    fun acc (fn, _) -> acc +. fn
+    ) 0. data /. float_of_int (List.length data)
+  in
+  let avg_steps = List.fold_left (
+    fun acc (_, step) -> acc +. step
+  ) 0. data /. float_of_int (List.length data)
+  in
+  let numerator = List.fold_left (
+    fun acc (fn, step) ->
+      acc +. (fn -. avg_fn) *. (step -. avg_steps)
+  ) 0. data
+  in
+  let denominator = List.fold_left (
+    fun acc (fn, _) ->
+      acc +. (fn -. avg_fn) ** 2.
+  ) 0. data
+  in
+  let scale = List.fold_left (
+    fun acc (fn, _) -> acc +. fn *. fn
+  ) 0. data
+  in
+  if not (Float.is_finite scale && Float.is_finite denominator) then None
+  else if denominator <= Float.epsilon *. scale then Some (0., avg_steps)
+  else
+    let m = numerator /. denominator in
+    let b = avg_steps -. m *. avg_fn in
+    Some (m, b)
 
+
+(*  *)
 let compute_error (points: (float * float) list) (thetas: (float * float)) : float =
   1.
 
+(* A linear function is y = mx + b; We try to find the best fit m and b *)
 let estimate (data: time_data list) =
   let cleaned = clean_data data
   in
-  let complexities = List.map (
+  let complexities = List.filter_map (
     fun c ->
       (* set f(n) and convert step to float *)
       let c_set = List.map (
@@ -48,13 +85,24 @@ let estimate (data: time_data list) =
           (Complexity.transform c (float_of_int len), float_of_int steps)
       ) cleaned
       in
-      let thetas = linear_regression c_set in
-      let error = compute_error c_set thetas in
-      {
-        bigO = c;
-        m = fst thetas;
-        b = snd thetas;
-        error = error
-      }
+      Printer.print_message (
+        "Analysing " ^ Complexity.string_of_complexity c ^ " case..."
+      );
+      match linear_regression c_set with
+      | None ->
+          Printer.print_message (
+            "Case " ^ Complexity.string_of_complexity c ^ " skipped: values overflow"
+          );
+          None
+      | Some (m, b) ->
+          let error = compute_error c_set (m, b) in
+          Printer.print_message ("-> Error is " ^ string_of_float error);
+          Some {
+            bigO = c;
+            m = m;
+            b = b;
+            error = error
+          }
   ) Complexity.all
-  in ()
+  in (* take the smallest error here *) 
+  ()

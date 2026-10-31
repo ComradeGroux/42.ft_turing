@@ -102,5 +102,4 @@ For a data set of single feature, we will use the closed form of linear regressi
 - [Core lib documentation](https://ocaml.org/p/core/v0.17.2/doc/core/Core/index.html)
 - [Time complexity for Turing Machine](https://abcdofalgorithms.wordpress.com/2014/11/26/how-to-compute-time-complexity-in-turing-machine/)
 - [Analysis of algorithms](https://www.geeksforgeeks.org/dsa/analysis-of-algorithms/)
-- [Linear regression](https://www.geeksforgeeks.org/machine-learning/ml-linear-regression/)
-- [Normal equation for linear regression](https://www.geeksforgeeks.org/machine-learning/ml-normal-equation-in-linear-regression/)
+- [Linear regression](https://en.wikipedia.org/wiki/Simple_linear_regression)

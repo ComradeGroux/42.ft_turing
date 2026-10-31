@@ -44,11 +44,8 @@ let complexity_mode (json: string) (inputs_path: string) =
 	let tapes = List.map Tape.init_tape inputs in
 	Printer.print_success "All tape initialized !";
 
-	(* Steps:
-	-> use some math stuffs to guess time complexity
-	-> profit
-	*)
 	Printer.print_message "Starting time complexity estimation";
+	Printer.print_message "";
 	Printer.print_message "(input len : steps)";
 	let steps = List.map (
 		fun tape -> 
@@ -58,6 +55,7 @@ let complexity_mode (json: string) (inputs_path: string) =
 			step
 	) tapes
 	in
+	Printer.print_message "";
 	Estimator.estimate steps;
 
 	Printer.print_message ""
