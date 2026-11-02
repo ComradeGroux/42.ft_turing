@@ -23,6 +23,8 @@ SOURCES =	main.ml			\
 			parser.ml		\
 			machine.ml		\
 			tape.ml			\
+			complexity.ml	\
+			estimator.ml	\
 			types.ml		\
 			printer.ml
 SRCS = $(filter %.ml, $(addprefix $(SRCS_DIR)/, $(SOURCES)))

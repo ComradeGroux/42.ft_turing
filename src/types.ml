@@ -42,5 +42,32 @@ type error =
 	| Initial_not_in_states
 	| Finals_not_subset_of_states
 	| Duplicate_transitions of state * symbol
+	| Invalid_transition of string
 	| Machine_blocked of state * symbol
 	| Default_error of string
+
+(* Normal -> Json path + input
+	 Complexity -> Json path + inputfile *)
+type mode = Normal of (string * string) | Complexity of (string * string)
+
+type tape_len = int
+
+type steps = int
+
+type message = string
+
+type time = (tape_len * steps)
+
+type time_data = Accept of time | Reject of (tape_len * message)
+
+type bigO =
+	Constant | Logarithmic | Linear | Linearithmic |
+	Quadratic | Cubic | Exponential | Factorial
+
+
+type complexity = {
+	bigO	: bigO;
+	m			: float;
+	b			: float;
+	error	: float;
+}

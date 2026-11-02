@@ -15,3 +15,13 @@ let move_right (t: tape) (blank: symbol) =
   match t.right with
   | [] -> { left = t.head::t.left ; head = blank ; right = [] }
   | curr::tail -> { left = t.head::t.left ; head = curr ; right = tail }
+
+let length (t: tape) : tape_len =
+  let rec count tape acc =
+    match tape with
+    | [] -> acc
+    | h :: t -> count t (acc + 1)
+  in 
+  let left_len = count t.left 0 in
+  let right_len = count t.right 0 in
+  left_len + 1 + right_len

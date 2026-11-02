@@ -11,12 +11,18 @@ let magenta = "\027[35m"
 let cyan = "\027[36m"
 
 let print_help () =
-		print_endline (	"usage: ft_turing [-h] jsonfile input\n\n"				^
-						"positional arguments:\n"								^
-						"    jsonfile      json description of the machine\n"	^
-						"    input         input of the machine\n\n"			^
-						"optional arguments:\n"									^
-						"    -h, --help    show this help message and exit")
+	print_endline (
+		"usage: ft_turing [-h] jsonfile input\n"										^
+		"       ft_turing [-h] jsonfile -c inputs_file\n\n"								^
+		"positional arguments:\n"														^
+		"    jsonfile                        json description of the machine\n"		^
+		"    input                           input of the machine\n\n"					^
+		"optional arguments:\n"															^
+		"    -h, --help                      show this help message and exit\n"		^
+		"    -c, --complexity inputs_file    estimate the time complexity of the\n"	^
+		"                                    machine from the inputs in inputs_file\n"	^
+		"                                    (one input per line, at least 3 of different lengths)"
+	)
 
 let print_banner () =
 	print_endline "";
@@ -51,6 +57,9 @@ let print_error (error: string) =
 
 let print_success (success: string) =
 	print_endline (bold ^ green ^ "Success: " ^ reset ^ success)
+
+let print_message (message: string) =
+	print_endline message
 
 let print_tape t =
 	let rec print_char_list lst =
@@ -115,3 +124,18 @@ let print_current_state (tape: tape) (state: state) (v: transition) =
 	print_string (gray ^ " >>>>> " ^ reset);
 	print_transition state v;
 	print_endline ""
+
+let print_step (step: time_data) =
+	match step with
+	| Accept (l, s) -> begin
+			print_endline(
+				"( " ^ string_of_int l ^
+				" : " ^ string_of_int s ^ " )"
+			) 
+		end
+	| Reject (l, s) -> begin
+			print_endline(
+					"( " ^ string_of_int l ^
+					" : " ^ s ^ " )"
+			)
+		end
