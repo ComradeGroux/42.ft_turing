@@ -130,6 +130,98 @@ The machine:
     - **NO**: Input is invalid, move all the way to the end and 'n'.
     - **END**: End state just to stop the machine.
 
+### 5 - UTM (Universal Turing Machine)
+This machine is built by the builder in the `utm/` directory
+
+The input are encoded by the encoder in the `utm/` directory
+#### Usage
+Please refer to the [README](/utm/README.md) in the `utm/` folder.
+
+#### Format layout
+```
+~ ;XcYwD;XcYwD;...|finals|blank|X S # <cells> ^ <head cell> <cells> ~
+```
+| Field | Meaning |
+|---|---|
+| `;XcYwD` | One transition: current state `X`, symbol read `c`, next state `Y`, symbol written `w`, direction `D` (`L` or `R`). Every state and symbol is a single character. |
+| `finals` | Final states of the simulated machine. |
+| `blank` | Blank symbol of the simulated machine. |
+| `X` | Register: current state of the simulated machine. |
+| `S` | Register: symbol under the simulated head (refreshed every cycle). |
+| `#` | Delimiter between the program/registers and the simulated tape. |
+| `^` | Head marker, always immediately to the **left** of the simulated head cell. |
+| `~` | Blank of the UTM itself: it surrounds the whole encoding. |
+
+##### Restriction
+###### Reserved characters
+`~ | ; # ^ L R` and the space, which is used as a temporary cursor marking the transition being examined. Every other character (the `universe`) can be used by the simulated machine.
+###### Number of states + alphabet
+The simulated machine CAN'T have more than 85 cumulated states and alphabet characters.
+
+#### Main loop
+
+check -> find -> match -> apply -> check -> ...
+
+| Main steps | What does it do | Goes to |
+|---|---|---|
+| check | Verify if 'X' is a final state | `HALT` or `find` |
+| find | Extract the symbol under the head | `match` (or `extend` on `~`) |
+| match | Find the transition to applies | `apply` |
+| apply | Execute the transition: update the current state, write `w` and move the head in the right direction | `check` |
+| extend | Grow the tape when the head leave it (left or right) | back to the loop |
+
+#### Main steps
+The UTM has 1910 different states, therefore I will not list them here.
+
+Everything I will explain below concern the OCaml application that build the UTM's JSON.
+
+##### check: halting test
+Reads `X` and looks for it in `finals`.
+
+1. `check_hash`: sweep right to `#`, step left onto `S`.
+2. `check_value`, `check_state`: cross `S`, read `X` and carry it by state name.
+3. `check_skip_state`, `check_1`, `check_2`: cross `|`, the blank, and `|`.
+4. `check_final`: scan `finals` leftwards. `X` found: `HALT`. Reached `|`: not final.
+5. `check_rewind`: sweep left to `~`, step right, go to `find_hash`.
+
+##### find: read the symbol under the head
+Copies the head cell to the register `S`.
+
+1. `find_hash`: sweep right to `#`.
+2. `seek`: sweep right to `^`.
+3. `read`: read the head cell `c` (if `c` is `~`, jump to `extend_tape_right`)
+4. `carry`: carry `c` leftwards to `#`
+5. `put`: write `c` is the register `S` (right before the `#`)
+6. `rewind`: sweep left to the beginning of the tape (`~`) and go to `matchcase`
+
+##### match: find the right transition
+Compares the transitions with `(X, S)` one by one
+
+1. `match_1`: replace the `;` of the first transition by the cursor (space)
+2. `match_read_1`, `match_carry_1`, `match_search_1`, `match_compare_1`: read the transition's state, carry it to `#`, and compare it with `X`.
+3. **DIFFERENT**: `match_back_ne` restores the `;`, `match_skip_transi` jumps to the next `;` and places the cursor, then starts again at step 2.
+4. **EQUAL**: `match_back_eq`, `match_eq_r1`, `match_read_2`, `match_carry_2`, `match_compare_2` repeat the process for the symbol read, compared with `S`.
+5. **BOTH EQUAL**: `match_back_found` returns to the cursor and goes to `apply`.
+
+If the end of the list (`|`) is reached, no state is defined there and the UTM blocks: no transition exists for this situation.
+
+##### apply: execute the transition
+Start on the matched transition.
+
+1. `apply`, `apply_skip_1`, `apply_read_state`, `apply_read_carry_state`, `apply_search_state`, `apply_put_state`: read the nest state `Y`, carry it to `#` and write it over `X`.
+2. `apply_back`, `apply_back_1`, `apply_back_2`, `apply_back_3`, `apply_read_write`, `apply_read_c_dir`: return to the transition, read the symbol to write `w` and the direction `D`.
+3. **MOVE RIGHT** (`apply_right`, `apply_replace_head_right`): Write `w` over the head cursor (`^`) and write the head cursor on the next cell.
+4. **MOVE LEFT** (`apply_left`, `apply_replace_left`, `apply_swap_0`, `apply_swap_1`, `apply_swapt`): write `w`, then swap `^` with its left neighbour. If that neighbour is `#`, go to `extend_tape_left`
+5. `apply_restore`, `apply_rewind`: put the `;` back in place and rewind to the most left of the tape (`~`), step right and go to `check_hash` (beginning of the loop)
+
+##### extend
+The simulated tape is infinite but the encoded one is finite so we need to be able of extending the simulated tape on the left and on the right.
+
+- *Retrieve the blank*: Go back to `#`, skip the registers `S` and `X`, skip the rule separator `|`, read the blank.
+- **RIGHT** (`extend_tape_right`): `find` found a `~` under the head. *Retrieve the blank*, carry it to the first `~`, write it there and restart at `find_hash`
+- **LEFT** (`extend_tape_left`): `^` as no left neighbour. *Retrieve the blank*, insert it right after `^` and then shift every character to the right with a carry loop (`extend_left_loop`). The last character will replace a `~`. Then continue at `apply_restore`
+
+
 ## Extra
 Additional machines, made to show other time complexities with `-c`.
 
